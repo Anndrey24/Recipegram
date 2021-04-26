@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Recipe Upload Page</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <style>
+
+/* CSS for the box that contains the form*/
+.container {
+  background-color: white;
+}
+
+/* CSS for all input tags*/
+input {
+  width: 25%;
+  padding: 15px;
+  border: solid black;
+}
+
+/* CSS for upload button*/
+.uploadbtn {
+  background-color: green;
+  color: white;
+  padding: 16px;
+  width: 100%;
+}
+
+</style>
+</head>
+<body>
+
+<!-- Makes an inverse navbar that is fixed to the top -->
+<nav class="navbar navbar-inverse navbar-fixed-top">
+  <!-- Sets the navbar header to RecipeGram-->
+  <div class="navbar-header">
+    <a class="navbar-brand" href="#">RecipeGram</a>
+  </div>
+  <!-- List after the header containing other indexes -->
+  <ul class="nav navbar-nav">
+    <li><a href="profile/feed.php">Feed</a></li>
+    <li><a href="profile/landing.php">Top Recipes</a></li>
+    <!-- shows the active list using class = "active" -->
+    <li class="active"><a href="UploadRecipePage.html">Upload</a></li>
+    <li><a href="map.html">Maps</a></li>
+    <li><a href="profile/feed.php">My Profile</a></li>
+    <li><a href="profile/settings.php">Settings</a></li>
+    <li><a href="logout.php">Sign Out</a></li>
+
+  </ul>
+</nav>
+
+
+
+<!-- Created form for recipe upload, named myForm, when the upload button is pressed it returns validateform and goes to upload.php
+    the enctype is used to pass the photo to the php -->
+<form name = "myForm" action="upload.php" method = "post" enctype="multipart/form-data" onsubmit = "return validateform()" >
+  <!-- put the form into a div box with class container -->
+  <div class="container">
+    <hr>
+    <hr>
+    <!-- This is the page title -->
+    <h1 style="text-align:center;">Upload a Recipe</h1>
+
+    <!-- A little bit of info for the user -->
+    <p style="text-align:center;">Please fill in this form to upload a recipe.</p>
+    <hr>
+
+    <!-- Allows user to input recipe name -->
+    <label for="recipeName"><b>Recipe Name</b></label>
+    <input type="text" placeholder="Enter recipe name" name="recipeName" id="recipeName" >
+    <hr>
+    
+    <!-- Create a dropdown menu for the difficulty of the recipe -->
+    <label for="diff"><b>Difficulty</b></label>
+      <select name="diff" id="diff">
+          <option value="Very Hard">Very Hard</option>
+          <option value="Hard">Hard</option>
+          <option value="Not Hard">Not too hard</option>
+          <option value="Easy">Easy</option>
+      </select>
+    <hr>
+
+    <!-- Allows user to input the prep time, cooking time and resting time  -->
+    <b>Preperation Time</b><br>
+    <input type="number" placeholder="Prep time" name="prep" id="prep" min="0" ><b> Minutes</b><br>
+    <b>Cooking Time</b><br>
+    <input type="number" placeholder="Cooking time" name="cook" id="cook" min="0" ><b> Minutes</b><br>
+    <b>Resting Time</b><br>
+    <input type="number" placeholder="Resting time" name="rest" id="rest" min="0" ><b> Minutes</b><br>
+    <hr>
+
+    <!-- User can input how many people are to be served -->
+    <label for="servings"><b>Serves</b></label>
+    <input type="number" placeholder="Enter number" name="servings" id="servings" min="1" > <b> People </b> <br>
+    <hr>
+
+    <!-- User can input what ingredient they want to add and the quantity and weight of it -->
+    <label for="ingredients"><b>Ingredients name</b></label>
+    <input type="text" placeholder="Write the ingredients name" name="ingredient" id="ingredient" autocomplete = "on">
+    <label for="weight"><b>Weight</b></label>
+    <input type="number" placeholder="Quantity" name="quantity" id="quantity" min="1" max = "999" >
+    <!-- Weight is selected as a dropdown box -->
+    <select name="weight" id="weight">
+          <option value="kg">Kilograms</option>
+          <option value="g">grams</option>
+          <option value="l">Liters</option>
+          <option value="ml">Millilitres</option>
+          <option value="lbs">Lbs</option>
+          <option value="oz">Oz</option>
+          <option value="tsp">Teaspoons</option>
+          <option value="tbsp">Tablespoons</option>
+          <option value="cups">Cups</option>
+    </select>
+    <!-- two buttons are created, one to add the ingredient to the ingredient list and the other to delete ingredients from the list -->
+    <button type="button" id = "addbtn" class="btn btn-primary" onclick="getIngredient()">Add ingredient</button>
+    <button type="button" class="btn btn-primary" onclick="removeIngredient()">Delete last ingredient</button>
+
+    <!-- Here is the list where the ingredients appear -->
+    <ul name = "ingList" id = "ingList"></ul>
+    <!-- Here are 3 hidden inputs which hold the ingredients, the total calories and the total price to be send to php -->
+    <input type="hidden" id="ingHidden" name = "ingHidden" value = "">
+    <input type="hidden" id="KCalHidden" name = "KCalHidden" value = "">
+    <input type="hidden" id="Hiddenprice" name = "Hiddenprice" value = "">
+    <hr>
+
+    <!-- A textarea is created so user can input the directions for their recipe -->
+    <label for="Directions"><b>Directions</b></label><br>
+    <textarea id="directions" name="directions" rows="5" cols="50" >Replace this text with the directions for your recipe. Please include numbers for each step (e.g. 1) ... 2) ... ) and space it out with paragraphs to help the reader</textarea>
+
+    <hr>
+
+    <!-- Allows user to input photo for their recipe  -->
+    <label for="photo"><b>Upload a photo</b></label>
+    <input type="file" id="photo" name="photo" accept="image/*">
+    <hr>
+    <!-- Allows user to input tags for their recipe  -->
+    <label for="tags"><b>Add Tags</b></label>
+    <input type="text" placeholder="Write tags seperated by commas" name="tags" id="tags" >
+    <hr>
+    <!-- Include a checkbox so that the user has to agree to T's and C's before uploading to ourwebsite  -->
+    <input type="checkbox" id="check" name="check" value="T&C" required>
+    <p style="text-align:center;">By pressing this ticking this box you agree to our <a href="termsandconditions.html">Terms & Conditions</a>.</p>
+
+    <!-- submit button  -->
+    <button type="submit" class="uploadbtn">Upload</button>
+  </div>
+</form>
+<script type="text/javascript">
+
+// Create variables to be used throughout the javascript code
+var estimatedCalories = 0;
+var estimatedPrice = 0;
+var indvPrices = [];
+var indvCals = [];
+var ingredients = [];
+var checkifnum = /\d/;
+var ingName = [];
+var ingr = "";
+
+
+// Create aysnchronous function called api that returns the calories and price of an ingredient
+async function api(ing, quant, weight, full){
+
+  // Create var ingID to validate if ing is ingredient
+  var ingID = ""
+  // fetch the api url with the query of "ing" which searches for ing within the food database
+  var response = await fetch("https://api.spoonacular.com/food/ingredients/search?apiKey=aec2938b559e43408ee3529a06593911&query=" + ing);
+  // the data is the json version of the response
+  var data = await response.json()
+  // for the length of the data results
+  for (var i = 0; i < data.results.length; i++) {
+    // If the data results name is the same as ing
+    if(data.results[i].name.toLowerCase() == ing){
+      // ingID = data results id (getting the ID of the ingredient)
+      ingID = (data.results[i].id);
+    }
+  }
+  //create var suggested names to be used when suggesting names for the user
+  var suggestedNames = []
+  // if ingID has not been changed (i.e. ing not found inside data results)
+  if(ingID == ""){
+    // if the results > 0
+    if(data.results.length > 0){
+      for (var i = 0; i < data.results.length; i++) {
+        // for length of results append the results name to suggested names array
+        suggestedNames.push(data.results[i].name);
+      }
+      // join the suggested names together with a \n
+      suggestedNames = suggestedNames.join("\n");
+      // Tell user that their ing was not found and give them the suggested names list
+      alert("Ingredient not found please check your spelling, here are some suggestions\n" + suggestedNames);
+      return;
+    } else {
+      // Else ing is completely not found as data results is not greater than 0
+      alert("Ingredient not found please check your spelling");
+      return;
+    }
+  } else{
+    // add the full ingredient to ingredients array
+    ingredients.push(full);
+    // add the ingredient name to ingName array
+    ingName.push(ing);
+    // update the ingHidden input value
+    document.getElementById("ingHidden").value = ingredients;
+    // Create a var called node which creates an element LI (list)
+    var node = document.createElement("LI");
+    // Create a var called textnode which creates a textnode for the full ingredient
+    var textnode = document.createTextNode(full);
+    // append to the node the textnode so the full ingredient is added to the list
+    node.appendChild(textnode);
+    // append the node to the end of the ingList so the user can see what ingredient they inputted
+    document.getElementById("ingList").appendChild(node);
+  }
+  // Create another response to fetch the information about the ing using the ingID quant and weight
+  var anotherresponse = await fetch("https://api.spoonacular.com/food/ingredients/" + ingID + "/information?apiKey=aec2938b559e43408ee3529a06593911&amount=" + quant + "&unit=" + weight);
+  // create another var to hold the data
+  var moredata = await anotherresponse.json()
+  // if the estimatedCost attribute is = 0
+  if(moredata.estimatedCost.value == 0){
+    // Cannot get price for the ingredient
+    alert("No price data for ingredient");
+  } else {
+    // increase var estimatedPrice by the estimatedCost value, divide it by 1.3 as the current value is in dollars, then round it and divide by 100 to put it in £'s
+    estimatedPrice += (Math.round(moredata.estimatedCost.value/1.3)/100);
+    // update Hiddenprice input tag with the new estimated price
+    document.getElementById("Hiddenprice").value = estimatedPrice;
+    // Add price to indvPrices array so that it can be taken away from estimatedPrice when item removed
+    indvPrices.push(Math.round(moredata.estimatedCost.value/1.3)/100);
+  }
+  // Chcek the results for nutrition information
+  for (var i = 0; i < (moredata.nutrition.nutrients).length; i++) {
+    // if the name Calories is found then
+    if(moredata.nutrition.nutrients[i].name == "Calories"){
+      // increase estimatedCalories by the Calories amount
+      estimatedCalories += moredata.nutrition.nutrients[i].amount;
+      // update KCalHidden input value
+      document.getElementById("KCalHidden").value = estimatedCalories;
+      // Append result to indvcals.
+      indvCals.push(moredata.nutrition.nutrients[i].amount);
+    }
+  }
+
+}
+
+// This function is called when an ingredient is to be added to the recipe
+function getIngredient() {
+  // x, y and z are the different components of the ingredient: name, quantity and weight
+  var x = document.getElementById("ingredient").value.toLowerCase();
+  var y = document.getElementById("quantity").value;
+  var z = document.getElementById("weight").value;
+  // if x or y are empty or x contains a number they must add a correct ingredient and return so nothing is added to the list
+  if(x === "" || y === "" || checkifnum.test(x) == true){
+    alert("Must enter a correct ingredient and Weight");
+    return;
+  }
+  
+  // create w which is x, y and z combined
+  var w = x + " - " + y + " " + z;
+  // Search through the ingredients list
+  for (var i = 0; i < ingredients.length; i++) {
+    // if w is inside ingredients or x has the same name as one of the ingredients
+    if(w == ingredients[i] || (x == ingName[i])){
+      // Alert the user that the ingredient is already listed and exits the function
+      alert("Ingredient already listed")
+      return;
+    }
+  }
+  // If its all good then call the price function with the parameters x,y,z and w
+  api(x, y, z, w);
+
+}
+
+// If remove ingredient button clicked
+function removeIngredient(){
+  // get the list of ingredients from the ingList
+  var list = document.getElementById("ingList");
+  // if the list has child nodes
+  if(list.hasChildNodes()){
+    // remove the last child in the list
+    list.removeChild(list.childNodes[(ingredients.length)-1]);
+    // remove the last ingredient from the ingredients array, indvPrices and invCals array so that 
+    // estimatedPrice and estimatedCalories can be recalculated
+    ingredients.pop();
+    indvPrices.pop();
+    indvCals.pop();
+    // add up the indvPrices array as set that equal to estimated prices
+    estimatedPrice = indvPrices.reduce(function(a, b){return a + b;}, 0);
+    // add up the indvCals array as set that equal to estimated prices
+    estimatedCalories = indvCals.reduce(function(a, b){return a + b;}, 0);
+    // recalculate the hidden inputs so that when the validate form is called the most current prices, ings and calories are entered
+    document.getElementById("ingHidden").value = ingredients;
+    document.getElementById("KCalHidden").value = estimatedCalories;
+    document.getElementById("Hiddenprice").value = estimatedPrice;
+  } else {
+    // Else there is nothing left to delete
+    alert("Nothing left to delete");
+    return;
+  }
+}
+function validateform(){
+  // Create different variables from different inputted values on the form using the form name and input id
+  var name = document.myForm.recipeName.value;
+  var diff = document.myForm.diff.value;
+  var prep = document.myForm.prep.value;
+  var cook = document.myForm.cook.value;
+  var rest = document.myForm.rest.value;
+  var servings = document.myForm.servings.value;
+  var directions = document.myForm.directions.value;
+  var tags = document.myForm.tags.value;
+
+  // ingredients validation - if no ingredients added
+  if(ingredients.length == 0){
+    alert("No ingredients listed");
+    return false;
+  }
+
+  if(ingredients.length > 20){
+    alert("Too many ingredients listed");
+    return false;
+  }
+
+  // Tags validation
+  if (tags.length>3) {
+    // split up tags and put it into an array called splitTags
+    var splitTags = tags.split(",");
+    for (var i = 0; i < splitTags.length; i++) {
+      // remove whitespace from splittags[i]  and make it lowercase
+      splitTags[i] = splitTags[i].trim().toLowerCase();
+    }
+  } else {
+    // No tags inputted
+    alert("Please Enter Your tags");      
+    return false;
+  }
+
+
+  //Cooking times validation
+  // if food is being rested without being cooked return
+  if(cook == 0 && rest != 0){
+    alert("Cannot rest something if it hasn't been cooked");
+    return false;
+  }
+  // if the time to create meal is less than 4 minutes return
+  if((parseInt(cook) + parseInt(prep) + parseInt(rest)) < 4){
+    alert("The time to create your meal is too short");
+    return false;
+  }
+
+  if((parseInt(cook) + parseInt(prep) + parseInt(rest)) > 1000){
+    alert("The time to create your meal is too long");
+    return false;
+  }
+
+  // Servings validation
+  // if no servings
+  if(servings < 1){
+    alert("Must be serving at least 1 person");
+    return false;
+  }
+
+
+  //Recipe Name validation
+  //if no name
+  if (name === "") {
+    alert("Please Enter Your recipe's name");
+    return false;
+  //if name too short
+  } else if (name.length < 4){
+    alert("Recipe name length is too short");
+    return false;
+  //if name contains num
+  } else if (checkifnum.test(name)){
+    alert("Recipe name contains a number");
+    return false;
+  //if name is too long
+  } else if(name.length > 30){
+    alert("Recipe name too long");
+    return false;
+  }
+
+  // create variable  splitDir to hold the split up directions
+  var splitDir = [];
+  // Directions validation
+  // if no directions
+  if (directions.length<1) {
+      alert("Please Enter directions");
+      return false;
+  } else {
+    // split up directions by paragraphs
+    fixedDir = directions.replace(/['"]+/g, '');
+    splitDir = fixedDir.split("\n");
+    // if splitDir > 0 (i.e. there are paragraphs)
+    if (splitDir.length > 0){
+      // for length of splitDir
+      for (var i = 0; i < splitDir.length; i++) { 
+        // if the first element in splitDir[i] the number relating to the paragraph
+        if (splitDir[i][0] == (i+1).toString()) {
+          // if the second element is either ")" "." or " "
+          if(splitDir[i][1] == ")" || splitDir[i][1] == "." || splitDir[i][1] == " "){
+            // put the number together with ) and put the rest of the string at the end
+            splitDir[i] = splitDir[i][0] + ") " + splitDir[i].slice(2);
+            // Update the directions textbox
+            document.getElementById("directions").innerHTML = splitDir;
+           } else{
+            // no ) . or " " after number
+            alert("Please add a ')' or '.' or ' ' after your number");
+            return false;
+          }
+        } else{
+          // incorrect or no number at the start of the paragraph
+          alert('The direction on paragraph ' + (i+1).toString() + ' is not numbered correctly.\nPlease input ' + (i+1).toString() + ' and following that with either ")", "." or a space');
+          return false;
+
+        }
+      }
+    }
+  }
+  // put directions to be splitDir joined by | so that it can be passed to php
+  document.getElementById("directions").value = splitDir.join('|');
+
+}
+</script>
+</body>
+</html>

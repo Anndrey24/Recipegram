@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <style type="text/css">
+    /*Style for the map, makes it fill the whole page and has a width of 1000 to make the map look larger on the screen*/
+    #map {
+      height: 100%;
+      width: 1000px;
+      margin: auto;
+    }
+
+    /*Style for the html and body, makes it fill the whole page*/
+    html,
+    body {
+      height: 100%;
+    }
+
+    /*Style for the autocomplete box*/
+    .search {
+      -webkit-box-align: center;
+      display: -webkit-box;
+      position: absolute;
+      z-index: 1;
+      width: 600px;
+      height: 150px;
+      left: 770px;
+    }
+
+    #autocomplete {
+      width: 100%;
+      height: 50px;
+    }
+
+    /*Make the name larger than other items in info window*/
+    #name{
+      font-size: 15px;
+    }
+
+  </style>
+  <title>Search shops nearby</title>
+  <script>
+    // initialise variables to be used throughout website
+    var map;
+    var places;
+    var info;
+    var markers = [];
+    var autocomplete;
+    // The init function is run when the website is called, it creates the map, infowindow and autocomplete
+    function init() {
+      // Here I created a constant called opt which holds all the options for the map
+      const opt = {
+        zoom: 8,
+        // centered around manchester
+        center: {lat: 53.4808, lng: -2.2426},
+        // allows user to pan across the map and zoom in and out
+        panControl: true,
+        zoomControl: true,
+      }
+
+      // Create the map with the options included
+      map = new google.maps.Map(document.getElementById("map"), opt);
+
+
+      //Create the infowindow where the content is everything inside the div id = infoW
+      info = new google.maps.InfoWindow({content: document.getElementById("infoW")});
+
+      //Create autocomplete and allow for user input via "autocomplete", it restricts the search types to place type address
+      autocomplete = new google.maps.places.Autocomplete(document.getElementById("autocomplete"), {types: ["address"]});
+
+      //Creates a PlacesService object around the map which can be used in the nearby search and get details.
+      places = new google.maps.places.PlacesService(map);
+
+      // Creates a listener for the autocomplete object if the user selects a new address
+      autocomplete.addListener("place_changed", autoChange);
+    }
+
+    // When the user selects a city, get the place details for the city and
+    // zoom the map in on the city.
+
+    // When the user selects an address, this is called to get the place details for the city and zooms into that area of the map
+    function autoChange() {
+      //Creates constant called place which gets the address from the autocomplete and shows details about it
+      const place = autocomplete.getPlace();
+
+      // if the place has a location then
+      if (place.geometry.location) {
+        // go to that location
+        map.panTo(place.geometry.location);
+        // and zoom in
+        map.setZoom(15);
+        // then call the search function to search for food shops nearby
+        search();
+
+      } else {
+        // if it doesnt have a location then the autocomplete placeholder should return back to its default value
+        document.getElementById("autocomplete").placeholder = "Enter your address to find food shops nearby";
+      }
+    }
+
+    // Search for shops in the area 
+    function search() {
+      //Creates a constant called search to be used in the nearbySearch function to produce certain results
+      const search = {
+        // Checks how big the map is
+        bounds: map.getBounds(),
+        // Specific types of shops I want to be searching the Google database for
+        types: ["supermarket", "bakery", "convenience_store", "grocery_or_supermarket", "grocery", "food"],
+      };
+
+      //Searches for nearby food shops
+      places.nearbySearch(search, (results) => {
+        // If results are returned then:
+        if (results) {
+          // If there are already markers
+          if(markers.length > 0){
+            // for the length of markers array set each marker to null
+            for (var i = 0; i < markers.length; i++) {
+              markers[i].setMap(null);
+            }
+            // Clear array
+            markers = [];
+          }
+
+
+          // For the length of results, create a marker for each which is placed in the right spot and has a drop animation
+          for (var i = 0; i < results.length; i++) {
+            var marker = new google.maps.Marker({
+              position: results[i].geometry.location,
+              animation: google.maps.Animation.DROP,
+            });
+            // set the markers placeResult as the result returned from the nearbySearch
+            marker.placeResult = results[i];
+            // append it to the markers array
+            markers.push(marker)
+            // If the marker is clicked show the infowindow of that marker by creating an addListener for the marker
+            google.maps.event.addListener(marker, "click", showIW);
+            // place the marker on the map
+            marker.setMap(map);
+          }
+        }
+      });
+    }
+
+    // Show details about the shop inside an info window anchored on the marker
+    // includes info about name, address, website, opening hours and price
+    function showIW() {
+      // calls the getDetails function with the parameters being the current markers place_id and if it returns a place then open info window
+      places.getDetails({ placeId: this.placeResult.place_id }, (place) => {
+          // open info window on map arround "this" marker
+          info.open(map, this);
+
+          // Name is set to the shops name, set to bold using the innerHTML function
+          document.getElementById("name").innerHTML = '<b>' + place.name + '</b>';
+
+          // If there is a formatted address use that as the address
+          if(place.formatted_address) {
+              // allow users to search up the address on google maps using place.url as a link
+              document.getElementById("address").innerHTML = '<a href="' + place.url + '">' + place.formatted_address + '</a>';
+          } else {
+            // else use the place's vicinity with the google maps link
+            document.getElementById("address").innerHTML = '<a href="' + place.url + '">' + place.vicinity + '</a>';
+          }
+
+
+          // If there is a rating for the place then show that rating out of 5
+          if (place.rating) {
+            // reverts it incase it was set to none
+            document.getElementById("rating-row").style.display = "";
+            // Place.rating is used in the textContent to show it out of 5
+            document.getElementById("rating").textContent = place.rating + "/5";
+          } else {
+            // If no rating then set the row style display to none so that its not included on the info window
+            document.getElementById("rating-row").style.display = "none";
+          }
+
+          // If there is a website for the place then display ther row with a link to the website
+          if (place.website) {
+            document.getElementById("website-row").style.display = "";
+            // Sets an 
+            document.getElementById("website").innerHTML = '<a href="' + place.website + '"> Click here to go to their website </a>';
+          } else {
+          // If no website dont display the website row
+            document.getElementById("website-row").style.display = "none";
+          }
+
+
+          // If there is a price level then we will want to display that
+          if (place.price_level){
+            document.getElementById("price-row").style.display = "";
+            // For the length of the price_level as an int
+            for (var i = 0; i < parseInt(place.price_level); i++) {
+              // set the value of var expensivity to the same number of $ signs, because £ is not ascii but $ is
+              var expensivity = "$".repeat(i+1);
+            // Write the $'s in place of the price row
+            document.getElementById("price").textContent = expensivity;
+            }
+          } else {
+            // If no Price then remove price row
+            document.getElementById("price-row").style.display = "none";
+          }
+
+          // If there are opening hours for the place
+          if(place.opening_hours){
+            // set the openingHoursArray to the weekday text (Monday: ..., Tuesday: ...)
+            var openingHoursArray = place.opening_hours.weekday_text;
+          }
+
+          // If the openingHoursArray exists
+          if (openingHoursArray){
+            // If it does, in case the rows have been set to none re-establish them
+            document.getElementById("times-row").style.display = "";
+            document.getElementById("mon-row").style.display = "";
+            document.getElementById("tue-row").style.display = "";
+            document.getElementById("thur-row").style.display = "";
+            document.getElementById("fri-row").style.display = "";
+            document.getElementById("sat-row").style.display = "";
+            document.getElementById("sun-row").style.display = "";
+            // Set the text for each row whilst also slicing the weekday off the start of the openingHoursArray
+            // e.g. openingHoursArray[0] = monday: 8am-... I use slice(8) to remove the monday: 
+            document.getElementById("monday").textContent = openingHoursArray[0].slice(8);
+            document.getElementById("tuesday").textContent = openingHoursArray[1].slice(8);
+            document.getElementById("wed").textContent = openingHoursArray[2].slice(10);
+            document.getElementById("thur").textContent = openingHoursArray[3].slice(9);
+            document.getElementById("fri").textContent = openingHoursArray[4].slice(8);
+            document.getElementById("sat").textContent = openingHoursArray[5].slice(9);
+            document.getElementById("sun").textContent = openingHoursArray[6].slice(7);
+          } else {
+            // Set the style for each of the rows to none so they aren't displayed
+            document.getElementById("times-row").style.display = "none";
+            document.getElementById("mon-row").style.display = "none";
+            document.getElementById("tue-row").style.display = "none";
+            document.getElementById("wed-row").style.display = "none";
+            document.getElementById("thur-row").style.display = "none";
+            document.getElementById("fri-row").style.display = "none";
+            document.getElementById("sat-row").style.display = "none";
+            document.getElementById("sun-row").style.display = "none";
+          }
+
+        }
+      );
+    }
+
+
+    </script>
+  </head>
+  <body>
+
+<!-- Makes an inverse navbar that is fixed to the top -->
+<nav class="navbar navbar-inverse navbar-fixed-top">
+  <!-- Sets the navbar header to RecipeGram-->
+  <div class="navbar-header">
+    <a class="navbar-brand" href="#">RecipeGram</a>
+  </div>
+  <!-- List after the header containing other indexes -->
+  <ul class="nav navbar-nav">
+    <li><a href="profile/feed.php">Feed</a></li>
+    <li><a href="profile/landing.php">Top Recipes</a></li>
+    <!-- shows the active list using class = "active" -->
+    <li><a href="UploadRecipePage.html">Upload</a></li>
+    <li class="active"><a href="map.html">Maps</a></li>
+    <li><a href="profile/feed.php">My Profile</a></li>
+    <li><a href="profile/settings.php">Settings</a></li>
+    <li><a href="logout.php">Sign Out</a></li>
+
+  </ul>
+</nav>
+
+
+    <!-- Creates the autocomplete box -->
+    <div class="search">
+      <!-- Creates an input for the box with a placeholder to help user know what to do -->
+      <input id="autocomplete" placeholder="Enter your address to find shops nearby" type="text">
+    </div>
+
+    <!-- Create map -->
+    <div id="map"></div>
+
+  <!-- Dont display them until clicked -->
+  <div style="display: none">
+    <!-- Create info window -->
+    <div id="infoW">
+      <!-- info window made up of tables, the first is the name which is in its own table -->
+      <table>
+        <!-- Creates element with header id name -->
+        <tr>
+          <th id="name"></th>
+        </tr>
+      </table>
+      <table>
+        <!-- Have another table for the address, rating, website  -->
+        <!-- Creates element with header Address and the data has id = address -->
+        <tr>
+          <th>Address:</th>
+          <td id="address"></td>
+        </tr>
+        <!-- use tr id to make row invisible -->
+        <tr id="rating-row">
+          <th>Rating:</th>
+          <!-- use td id to show rating -->
+          <td id="rating"></td>
+        </tr>
+        <!-- use tr id to make row invisible -->
+        <tr id="website-row">
+          <th>Website:</th>
+          <!-- use td id to show website -->
+          <td id="website"></td>
+        </tr>
+        
+        <tr id="price-row">
+          <th>Price:</th>
+          <!-- use td id to show price -->
+          <td id="price"></td>
+        </tr>
+      </table>
+
+      <!-- Opening Hours in its own table as the word "opening hours" is too long and causes the box to look abnormal -->
+      <table>
+        <tr id="times-row">
+          <th>Opening Hours</th>
+        </tr>
+      </table>
+
+      <!-- Create a table containing the opening hours times from monday to sunday -->
+      <table>
+        <!-- Here I define a row of cells for the table showing the opening hours  -->
+        <!-- I use the id mon-row to define whether the row should appear or not and td id to show the times for each row   -->
+        <tr id="mon-row">
+          <th>Monday: </th>
+          <td id = "monday"></td>
+        </tr>
+        <tr id="tue-row">
+          <th>Tuesday: </th>
+          <td id = "tuesday"></td>
+        </tr>
+        <tr id="wed-row">
+          <th>Wednesday: </th>
+          <td id = "wed"></td>
+        </tr>
+        <tr id="thur-row">
+          <th>Thursday: </th>
+          <td id = "thur"></td>
+        </tr>
+        <tr id="fri-row">
+          <th>Friday: </th>
+          <td id = "fri"></td>
+        </tr>
+        <tr id="sat-row">
+          <th>Saturday: </th>
+          <td id = "sat"></td>
+        </tr>
+        <tr id="sun-row">
+          <th>Sunday: </th>
+          <td id = "sun"></td>
+        </tr>
+
+      </table>
+    </div>
+  </div>
+    <!-- Calls the google maps API place library with my key and the callback function is init -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA-gVR1NMWS5ji80VPJvjgFF1FNyFHyrE8&callback=init&libraries=places&v=weekly" async></script>
+  </body>
+</html>

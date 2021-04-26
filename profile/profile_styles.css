@@ -1,0 +1,108 @@
+
+.profile-header {
+  line-height: 1;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.profile-header-logo {
+  font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+  font-size: 2.25rem;
+}
+
+.profile-header-logo:hover {
+  text-decoration: none;
+}
+
+.profile-picture{
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  margin-bottom: 20px;
+}
+
+.recipe-thumbnail{
+  width: 200px;
+  height: 250px;
+  object-fit: cover;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+}
+
+.display-4 {
+  font-size: 2.5rem;
+}
+@media (min-width: 768px) {
+  .display-4 {
+    font-size: 3rem;
+  }
+}
+
+.card-img-right {
+  height: 100%;
+  border-radius: 0 3px 3px 0;
+}
+
+.flex-auto {
+  -ms-flex: 0 0 auto;
+  flex: 0 0 auto;
+}
+
+.h-250 { height: 250px; }
+@media (min-width: 768px) {
+  .h-md-250 { height: 250px; }
+}
+
+/* Pagination */
+.profile-pagination {
+  margin-bottom: 4rem;
+}
+.profile-pagination > .btn {
+  border-radius: 2rem;
+}
+
+/*
+ * Blog posts
+ */
+
+
+.profile-recipe {
+  margin-bottom: 3rem;
+}
+.profile-recipe-meta {
+  color: #999;
+}
+.profile-recipe-title {
+  margin-bottom: .25rem;
+  font-size: 1.5rem;
+}
+
+.activity{
+  margin-bottom: 0.25rem;
+}
+.activity-time{
+  margin-bottom: 1.25rem;
+  font-size: 1rem;
+  color: #999;
+}
+
+
+.friends-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+/*
+ * Footer
+ */
+.profile-footer {
+  padding: 2.5rem 0;
+  color: #999;
+  text-align: center;
+  background-color: #f9f9f9;
+  border-top: .05rem solid #e5e5e5;
+}
+.profile-footer p:last-child {
+  margin-bottom: 0;
+}
